@@ -145,3 +145,5 @@ darwin/bsc
 .nyc_output
 themes
 .vscode/settings.json
+
+.merlin

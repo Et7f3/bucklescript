@@ -38,29 +38,6 @@ let setup_napkin_error_printer () =
   Lazy.force Super_main.setup;
   Lazy.force Res_outcome_printer.setup
 
-let handle_reason (type a) (kind : a Ml_binary.kind) sourcefile ppf opref =
-  setup_reason_error_printer ();
-  let tmpfile =  Ast_reason_pp.pp sourcefile in
-  (match kind with
-   | Ml_binary.Ml ->
-     Js_implementation.implementation
-       ~parser:(fun file_in ->
-           let in_chan = open_in_bin file_in in
-           let ast = Ml_binary.read_ast Ml in_chan in
-           close_in in_chan; ast
-         )
-       ppf  tmpfile opref
-
-   | Ml_binary.Mli ->
-     Js_implementation.interface
-       ~parser:(fun file_in ->
-           let in_chan = open_in_bin file_in in
-           let ast = Ml_binary.read_ast Mli in_chan in
-           close_in in_chan; ast
-         )
-       ppf  tmpfile opref ;    );
-  Ast_reason_pp.clean tmpfile
-
 
 type valid_input =
   | Ml
@@ -127,9 +104,14 @@ let process_file ppf sourcefile =
   let input = classify_input ext in
   let opref = output_prefix sourcefile in
   match input with
-  | Re -> handle_reason Ml sourcefile ppf opref
+  | Re ->
+    Js_implementation.implementation
+      ~parser:Ast_reason_pp.parse_implementation
+      ppf sourcefile opref
   | Rei ->
-    handle_reason Mli sourcefile ppf opref
+    Js_implementation.interface
+      ~parser:Ast_reason_pp.parse_interface
+      ppf sourcefile opref
   | Reiast
     ->
     setup_reason_error_printer ();
@@ -211,16 +193,25 @@ let intf filename =
   Js_config.js_stdout := false ;
   process_interface_file ppf filename;;
 
+let reason_fmt ~input =
+  let isInterface =
+    let len = String.length input in
+    len > 0 && String.unsafe_get input (len - 1) = 'i'
+  in
+  if isInterface then
+    Ast_reason_pp.format_interface input
+  else
+    Ast_reason_pp.format_implementation input
 
 let format_file input =
   let ext = classify_input (Ext_filename.get_extension_maybe input) in
-  let syntax =
+  let format_fn =
     match ext with
-    | Ml | Mli -> `ml
-    | Res | Resi -> `res
-    | Re | Rei -> `refmt (Filename.concat (Filename.dirname Sys.executable_name) "refmt.exe")
+    | Ml | Mli -> Res_multi_printer.print `ml
+    | Res | Resi -> Res_multi_printer.print `res
+    | Re | Rei -> reason_fmt
     | _ -> Bsc_args.bad_arg ("don't know what to do with " ^ input) in
-  output_string stdout (Res_multi_printer.print syntax ~input)
+  output_string stdout (format_fn ~input)
 
 let set_color_option option =
   match Clflags.parse_color_setting option with

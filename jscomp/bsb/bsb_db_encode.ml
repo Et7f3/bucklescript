@@ -62,7 +62,7 @@ let make_encoding length buf : Ext_buffer.t -> int -> unit =
   they are only used to control the order.
   Strictly speaking, [tmp_buf1] is not needed
 *)
-let encode_single (db : Bsb_db.map) (buf : Ext_buffer.t) =
+let encode_single ~proj_dir (db : Bsb_db.map) (buf : Ext_buffer.t) =
   (* module name section *)
   let len = Map_string.cardinal db in
   Ext_buffer.add_string_char buf (string_of_int len) '\n';
@@ -85,9 +85,10 @@ let encode_single (db : Bsb_db.map) (buf : Ext_buffer.t) =
           (Hash_string.find_exn  mapping module_info.dir lsl 1 + (Obj.magic (module_info.case : bool) : int)));
     nl buf
   end
-let encode (dbs : Bsb_db.t) buf =
-  encode_single dbs.lib buf ;
-  encode_single dbs.dev buf
+
+let encode ~proj_dir (dbs : Bsb_db.t) buf =
+  encode_single ~proj_dir dbs.lib buf;
+  encode_single ~proj_dir dbs.dev buf
 
 
 (*  shall we avoid writing such file (checking the digest)?
@@ -95,11 +96,10 @@ let encode (dbs : Bsb_db.t) buf =
   we should we avoid it in the first place, if we do start scanning,
   this operation seems affordable
  *)
-let write_build_cache ~dir (bs_files : Bsb_db.t)  : string =
-  let oc = open_out_bin (Filename.concat dir bsbuild_cache) in
+let write_build_cache ~proj_dir (bs_files : Bsb_db.t)  : unit =
+  let lib_artifacts_dir = !Bsb_global_backend.lib_artifacts_dir in
+  let oc = open_out_bin Ext_path.(proj_dir // lib_artifacts_dir // bsbuild_cache) in
   let buf = Ext_buffer.create 100_000 in
-  encode bs_files buf ;
+  encode ~proj_dir bs_files buf;
   Ext_buffer.output_buffer oc buf;
-  close_out oc;
-  let digest = Ext_buffer.digest buf in
-  Digest.to_hex digest
+  close_out oc

@@ -38,6 +38,7 @@ type check_result =
   | Good
   | Bsb_file_not_exist (** We assume that it is a clean repo *)
   | Bsb_source_directory_changed
+  | Bsb_dep_digest
   | Bsb_bsc_version_mismatch
   | Bsb_forced
   | Other of string
@@ -59,14 +60,16 @@ val pp_check_result :
     [build.ninja] should be regenerated
 *)
 val record :
+  deps_digest:string ->
   per_proj_dir:string ->
   file:string ->
   string list ->
-  unit
+  string
 
 
 (** check if [build.ninja] should be regenerated *)
 val check :
+  deps_digest:string ->
   per_proj_dir:string ->
   forced:bool ->
   file:string ->

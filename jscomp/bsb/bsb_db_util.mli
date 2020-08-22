@@ -47,3 +47,6 @@ val add_basename:
   ?error_on_invalid_suffix:Ext_position.t->
   string ->
   Bsb_db.map
+
+
+val filename : proj_dir:string -> Bsb_db.module_info -> string

@@ -126,3 +126,20 @@ let add_basename
            | Some x ->
              check x name_sans_extension case syntax_kind info
         )
+
+let (//) = Ext_path.combine
+let filename ~proj_dir ({ syntax_kind; info; name_sans_extension } : Bsb_db.module_info) =
+  match syntax_kind, info with
+  | Ml, (Intf | Impl_intf) ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_mli)
+  | Ml, Impl ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_ml)
+  | Reason, (Intf | Impl_intf) ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_rei)
+  | Reason, Impl ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_re)
+  | Res, (Intf | Impl_intf) ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_resi)
+  | Res, Impl ->
+    proj_dir // (name_sans_extension ^ Literals.suffix_res)
+

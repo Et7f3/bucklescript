@@ -67,12 +67,7 @@ let regenerate_ninja
       (fun x ->
         let dir = per_proj_dir // x in (*Unix.EEXIST error*)
         if not (Sys.file_exists dir) then  Unix.mkdir dir 0o777);
-    if toplevel then
-      Bsb_watcher_gen.generate_sourcedirs_meta
-        ~name:(lib_bs_dir // Literals.sourcedirs_meta)
-        config.file_groups
-    ;
-#if BS_NATIVE then
+#ifdef BS_NATIVE
     if !Bsb_global_backend.backend = Bsb_config_types.Js then begin
       Bsb_merlin_gen.merlin_file_gen ~per_proj_dir
         config;
@@ -90,7 +85,7 @@ let regenerate_ninja
        config;
     Bsb_ninja_gen.output_ninja_and_namespace_map
       ~per_proj_dir  ~toplevel config ;
-#end
+#endif
 
     (* PR2184: we still need record empty dir
         since it may add files in the future *)

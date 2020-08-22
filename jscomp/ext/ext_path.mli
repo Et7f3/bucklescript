@@ -34,7 +34,7 @@ type t
 *)
 val simple_convert_node_path_to_os_path : string -> string
 
-
+val split_by_sep_per_os: string -> string list
 
 (**
    [combine path1 path2]
@@ -46,6 +46,7 @@ val combine :
   string ->
   string
 
+val (//) : string -> string -> string
 
 
 (**

@@ -41,15 +41,25 @@ type shadow = { key : string ; op : override }
    otherwise the build system can not figure out clearly
    however, for the command we don't need pass `-o`
 *)
+
+val output_dune_inc : Buffer.t -> bs_dep_parse:string -> deps:string list -> unit
+
+val output_alias :
+  ?action:string -> ?locks:string -> Buffer.t -> name:string -> deps:string list -> unit
+
 val output_build :
   ?order_only_deps:string list ->
   ?implicit_deps:string list ->
+  ?rel_deps:string list ->
+  ?bs_dependencies_deps:string list ->
   ?implicit_outputs: string list ->
+  ?js_outputs: string list ->
   ?shadows:shadow list ->
   outputs:string list ->
   inputs:string list ->
   rule:Bsb_ninja_rule.t ->
-  out_channel ->
+  string ->
+  Buffer.t ->
   unit
 
 
@@ -57,9 +67,10 @@ val phony  :
   ?order_only_deps:string list ->
   inputs:string list ->
   output:string ->
-  out_channel ->
+  Buffer.t ->
   unit
 
-val output_kv : string ->  string -> out_channel -> unit
-val output_kvs : (string * string) array -> out_channel -> unit
+val output_kv : string ->  string -> Buffer.t -> unit
+val output_kvs : (string * string) array -> Buffer.t -> unit
 
+val revise_dune : string -> Buffer.t -> unit

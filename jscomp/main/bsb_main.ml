@@ -87,7 +87,7 @@ let bsb_main_flags : (string * spec * string) array =
     specify a websocket number (and optionally, a host). \n\
     When a build finishes, we send a message to that port. \n\
     For tools that listen on build completion." ;
-#if BS_NATIVE then
+#ifdef BS_NATIVE
     "-backend", String (String_call (fun s ->
         match s with
         | "js"       -> Bsb_global_backend.set_backend Bsb_config_types.Js
@@ -96,40 +96,59 @@ let bsb_main_flags : (string * spec * string) array =
         | _ -> failwith "-backend should be one of: 'js', 'bytecode' or 'native'."
       )),
     "Builds the entries specified in the bsconfig that match the given backend. Can be either 'js', 'bytecode' or 'native'.";
-#end
+#endif
   |]
 
 
 (*Note that [keepdepfile] only makes sense when combined with [deps] for optimization*)
 
-(**  Invariant: it has to be the last command of [bsb] *)
-let exec_command_then_exit  command =
-  Bsb_log.info "@{<info>CMD:@} %s@." command;
-  exit (Sys.command command )
-
 (* Execute the underlying ninja build call, then exit (as opposed to keep watching) *)
-let ninja_command_exit   ninja_args  =
-  let ninja_args_len = Array.length ninja_args in
-  let lib_artifacts_dir = !Bsb_global_backend.lib_artifacts_dir in
-  if Ext_sys.is_windows_or_cygwin then
-    let path_ninja = Filename.quote Bsb_global_paths.vendor_ninja in
-    exec_command_then_exit
-      (if ninja_args_len = 0 then
-         Ext_string.inter3
-           path_ninja "-C" lib_artifacts_dir
-       else
-         let args =
-           Array.append
-             [| path_ninja ; "-C"; lib_artifacts_dir|]
-             ninja_args in
-         Ext_string.concat_array Ext_string.single_space args)
-  else
-    let ninja_common_args = [|"ninja.exe"; "-C"; lib_artifacts_dir |] in
-    let args =
-      if ninja_args_len = 0 then ninja_common_args else
-        Array.append ninja_common_args ninja_args in
-    Bsb_log.info_args args ;
-    Unix.execvp Bsb_global_paths.vendor_ninja args
+let ninja_command_exit ?(dirs: Bsb_file_groups.file_groups option) ninja_args  =
+  let mk_args targets =
+    let ninja_common_args = Array.append [|Literals.dune; "build"|] targets in
+    let ninja_args_len = Array.length ninja_args in
+     let args =
+       if ninja_args_len = 0 then ninja_common_args else
+         Array.append ninja_common_args ninja_args
+     in
+     args
+  in
+  (* [dirs] = [None]: -make_world
+   * [dirs] = [Some dirs]: just the current project (don't build node_modules)
+   *)
+  let depends_args, world_args = match dirs with
+  | None ->
+    [| ("@" ^ Literals.bsb_depends) |], [| ("@" ^ Literals.bsb_world) |]
+  | Some dirs ->
+    (* TODO(anmonteiro): this doesn't work if the directory starts with `@`.
+     * See: https://github.com/ocaml/dune/issues/3716 *)
+    let depends_args = (Ext_array.of_list_map dirs (fun {dir} ->
+      Ext_path.(("@@" ^ dir) // Literals.bsb_depends)))
+    in
+    let world_args = (Ext_array.of_list_map dirs (fun {dir} ->
+      Ext_path.(("@@" ^ dir) // Literals.bsb_world)))
+    in
+    depends_args, world_args
+  in
+  let depends_args, world_args = mk_args depends_args, mk_args world_args in
+  let depends_command = {
+      Bsb_unix.cmd = Literals.dune;
+      cwd = Bsb_global_paths.cwd;
+      args = depends_args
+    }
+  in
+  let eid = match dirs with
+    | None ->
+      Bsb_log.info "@{<info>Running:@} %s@." (String.concat " " (Array.to_list depends_args));
+      Bsb_unix.run_command_execvp depends_command
+    | Some _ -> 0
+  in
+  if eid <> 0 then
+    Bsb_unix.command_fatal_error depends_command eid
+  else begin
+   Bsb_log.info "@{<info>Running:@} %s@." (String.concat " " (Array.to_list world_args));
+   Unix.execvp Literals.dune world_args
+  end
 
 
 
@@ -183,14 +202,19 @@ let install_target config_opt =
 
 (* see discussion #929, if we catch the exception, we don't have stacktrace... *)
 let () =
+  let argv = Sys.argv in
   try begin
-    match Sys.argv with
-    | [| _ |] ->  (* specialize this path [bsb.exe] which is used in watcher *)
-      Bsb_ninja_regen.regenerate_ninja
+    match argv with
+    | [| _ |]
+    | [| _; "-verbose" |] ->  (* specialize this path [bsb.exe] which is used in watcher *)
+      Bsb_log.verbose ();
+      let config = Bsb_ninja_regen.regenerate_ninja
         ~toplevel_package_specs:None
         ~forced:false
-        ~per_proj_dir:Bsb_global_paths.cwd  |> ignore;
-      ninja_command_exit  [||]
+        ~per_proj_dir:Bsb_global_paths.cwd
+      in
+      Ext_option.iter config (fun config ->
+        ninja_command_exit ~dirs:config.file_groups.files [||])
     | argv ->
       begin
         let i =  Ext_array.rfind_with_index argv Ext_string.equal separator in
@@ -219,7 +243,7 @@ let () =
                      ~toplevel_package_specs:None
                      ~forced:force_regenerate ~per_proj_dir:Bsb_global_paths.cwd   in
                  if make_world then begin
-                   Bsb_world.make_world_deps Bsb_global_paths.cwd config_opt [||]
+                   Bsb_world.make_world_deps Bsb_global_paths.cwd config_opt
                  end;
                  if !watch_mode then begin
                    program_exit ()
@@ -243,9 +267,6 @@ let () =
             ~finish:i
             bsb_main_flags handle_anonymous_arg  ;
             let ninja_args = Array.sub argv (i + 1) (Array.length argv - i - 1) in
-            match ninja_args with
-            | [|"-h"|] -> ninja_command_exit ninja_args
-            | _ ->
             let config_opt =
               (Bsb_ninja_regen.regenerate_ninja
                 ~toplevel_package_specs:None
@@ -253,7 +274,7 @@ let () =
                 ~forced:!force_regenerate) in
             (* [-make-world] should never be combined with [-package-specs] *)
             if !make_world then
-              Bsb_world.make_world_deps Bsb_global_paths.cwd ( config_opt) ninja_args;
+              Bsb_world.make_world_deps Bsb_global_paths.cwd  config_opt;
             if !do_install then
               install_target ( config_opt);
             if !watch_mode then program_exit ()

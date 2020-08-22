@@ -121,14 +121,14 @@ let string_of_module_id
 
         | Package_found pkg, Package_script
           ->
-#if BS_NATIVE then
+#ifdef BS_NATIVE
           if Filename.is_relative pkg.rel_path then
             pkg.pkg_rel_path // js_file
           else
             pkg.rel_path // js_file
 #else
           pkg.pkg_rel_path // js_file
-#end
+#endif
 
         | Package_found dep_pkg,
           Package_found cur_pkg ->
@@ -143,14 +143,14 @@ let string_of_module_id
           else
             begin match module_system with
               | NodeJS | Es6 ->
-#if BS_NATIVE then
+#ifdef BS_NATIVE
           if Filename.is_relative dep_pkg.rel_path then
             dep_pkg.pkg_rel_path // js_file
           else
             dep_pkg.rel_path // js_file
 #else
                 dep_pkg.pkg_rel_path // js_file
-#end
+#endif
               (** Note we did a post-processing when working on Windows *)
               | Es6_global
               ->
@@ -186,7 +186,7 @@ let string_of_module_id
 
 
 (* Override it in browser *)
-#if BS_BROWSER then
+#ifdef BS_BROWSER
 let string_of_module_id_in_browser (x : Lam_module_ident.t) =
    match x.kind with
    | External {name} -> name
@@ -197,4 +197,4 @@ let string_of_module_id
     ~output_dir:(_:string)
     (_module_system : Js_packages_info.module_system)
      = string_of_module_id_in_browser id
-#end
+#endif

@@ -43,7 +43,8 @@ let find_in_path_uncap path name =
 
 
 (* ATTENTION: lazy to wait [Config.load_path] populated *)
-let find_opt file =  find_in_path_uncap !Config.load_path file
+let find_opt file =
+ find_in_path_uncap !Config.load_path file
 
 
 

@@ -27,10 +27,17 @@
 let (//) = Ext_path.combine
 let current_package : Bsb_pkg_types.t = Global Bs_version.package_name
 let resolve_package cwd  package_name =
-  let x =  Bsb_pkg.resolve_bs_package ~cwd package_name  in
+  let package_path =  Bsb_pkg.resolve_bs_package ~cwd package_name  in
+  let rel = Ext_path.rel_normalized_absolute_path ~from:Bsb_global_paths.cwd package_path in
+  let package_install_path =
+    Bsb_global_paths.cwd // !Bsb_global_backend.dune_build_dir // rel
+  in
   {
     Bsb_config_types.package_name ;
-    package_install_path = x // !Bsb_global_backend.lib_ocaml_dir
+    package_path;
+    package_install_path;
+    package_dirs = [];
+    package_install_dirs = [];
   }
 
 type json_map = Ext_json_types.t Map_string.t
@@ -39,7 +46,7 @@ let (|?)  m (key, cb) =
   m  |> Ext_json.test key cb
 
 
-#if BS_NATIVE then
+#ifdef BS_NATIVE
 let extract_main_entries (map :json_map) =
 
   let extract_entries (field : Ext_json_types.t array) =
@@ -85,7 +92,7 @@ let extract_main_entries (map :json_map) =
   !entries
 #else
 let extract_main_entries (_ :json_map) = []
-#end
+#endif
 
 
 let package_specs_from_bsconfig () =
@@ -181,7 +188,10 @@ let check_stdlib (map : json_map) cwd (*built_in_package*) =
         check_version_exit map stdlib_path;
         Some {
             Bsb_config_types.package_name = current_package;
-            package_install_path = stdlib_path // !Bsb_global_backend.lib_ocaml_dir;
+            package_path = stdlib_path;
+            package_install_path = stdlib_path;
+            package_dirs = [stdlib_path // !Bsb_global_backend.lib_ocaml_dir];
+            package_install_dirs = [stdlib_path // !Bsb_global_backend.lib_ocaml_dir]
           }
 
       | _ -> assert false
@@ -309,16 +319,6 @@ let extract_generators (map : json_map) =
   !generators
 
 
-let extract_dependencies (map : json_map) cwd (field : string )
-  : Bsb_config_types.dependencies =
-  match Map_string.find_opt map field with
-  | None -> []
-  | Some (Arr ({content = s})) ->
-    Ext_list.map (Bsb_build_util.get_list_string s) (fun s -> resolve_package cwd (Bsb_pkg_types.string_as_package s))
-  | Some config ->
-    Bsb_exception.config_error config
-      (field ^ " expect an array")
-
 (* return an empty array if not found *)
 let extract_string_list (map : json_map) (field : string) : string list =
   match Map_string.find_opt map field with
@@ -379,7 +379,7 @@ let extract_js_post_build (map : json_map) cwd : string option =
 
 (** ATT: make sure such function is re-entrant.
     With a given [cwd] it works anywhere*)
-let interpret_json
+let rec interpret_json
     ~toplevel_package_specs
     ~per_proj_dir:(per_proj_dir:string)
 
@@ -428,11 +428,12 @@ let interpret_json
           Some (Bsb_build_util.resolve_bsb_magic_file ~cwd:per_proj_dir ~desc:Bsb_build_schemas.pp_flags p).path
       ) in
     let reason_react_jsx = extract_reason_react_jsx map in
-    let bs_dependencies = extract_dependencies map per_proj_dir Bsb_build_schemas.bs_dependencies in
+    let bs_dependencies =
+      extract_dependencies ~toplevel_package_specs:(Some package_specs) map per_proj_dir Bsb_build_schemas.bs_dependencies in
     let toplevel = toplevel_package_specs = None in
     let bs_dev_dependencies =
       if toplevel then
-        extract_dependencies map per_proj_dir Bsb_build_schemas.bs_dev_dependencies
+        extract_dependencies ~toplevel_package_specs:(Some package_specs) map per_proj_dir Bsb_build_schemas.bs_dev_dependencies
       else [] in
     begin match Map_string.find_opt map Bsb_build_schemas.sources with
       | Some sources ->
@@ -489,3 +490,35 @@ let interpret_json
     end
   | _ ->
     Bsb_exception.invalid_spec "bsconfig.json expect a json object {}"
+
+and extract_dependencies ~toplevel_package_specs (map : json_map) cwd (field : string )
+  : Bsb_config_types.dependencies =
+  match Map_string.find_opt map field with
+  | None -> []
+  | Some (Arr ({content = s})) ->
+    Ext_list.map (Bsb_build_util.get_list_string s) (fun s ->
+     let dep = resolve_package cwd (Bsb_pkg_types.string_as_package s) in
+     let { Bsb_config_types.file_groups = { files; _ }; namespace; _ } =
+       interpret_json ~toplevel_package_specs ~per_proj_dir:dep.package_path
+     in
+     let ns_incl = Ext_option.map namespace (fun _ns ->
+       dep.package_install_path // !Bsb_global_backend.lib_artifacts_dir)
+     in
+     let dirs = Ext_list.filter_map files (fun { Bsb_file_groups.dir; dev_index; _ } ->
+        if not dev_index then Some (dep.package_path // dir) else None
+     )
+     in
+     let install_dirs = Ext_list.filter_map files (fun { Bsb_file_groups.dir; dev_index; _ } ->
+        if not dev_index then Some (dep.package_install_path // dir) else None
+     )
+     in
+     { dep with
+       package_install_dirs = (match ns_incl with Some ns_incl -> ns_incl :: install_dirs | None -> install_dirs);
+       package_dirs = dirs
+     })
+  | Some config ->
+    Bsb_exception.config_error config
+      (field ^ " expect an array")
+
+
+

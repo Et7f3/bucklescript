@@ -41,12 +41,12 @@ let command_fatal_error cmd eid =
   Bsb_log.error "@{<error>Failure:@} %s \n Location: %s@." cmd.cmd cmd.cwd;
   exit eid
 
-let run_command_execv_unix  cmd : int =
+let run_command_execv_unix ?(execv=Unix.execv) cmd : int =
   match Unix.fork () with
   | 0 ->
     log cmd;
     Unix.chdir cmd.cwd;
-    Unix.execv cmd.cmd cmd.args
+    execv cmd.cmd cmd.args
   | pid ->
     match Unix.waitpid [] pid  with
     | _, process_status ->
@@ -79,7 +79,13 @@ let run_command_execv_win (cmd : command) =
 let run_command_execv =
   if Ext_sys.is_windows_or_cygwin then
     run_command_execv_win
-  else run_command_execv_unix
+  else run_command_execv_unix ~execv:Unix.execv
+
+let run_command_execvp =
+  if Ext_sys.is_windows_or_cygwin then
+    run_command_execv_win
+  else run_command_execv_unix ~execv:Unix.execvp
+
 (** it assume you have permissions, so always catch it to fail
     gracefully
 *)

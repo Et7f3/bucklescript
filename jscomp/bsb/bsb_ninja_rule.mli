@@ -30,7 +30,8 @@
 type t
 
 
-val get_name : t  -> out_channel -> string
+val output_rule : t -> ?target:string -> string -> Buffer.t -> unit
+val get_name : t -> ?target:string -> string  -> Buffer.t -> string
 
 (***********************************************************)
 (** A list of existing rules *)
@@ -69,11 +70,9 @@ type command = string
     we must make sure it is re-entrant
 *)
 val make_custom_rules :
-  has_gentype:bool ->
+  global_config: Bsb_ninja_global_vars.t ->
   has_postbuild:bool ->
   has_ppx:bool ->
-  has_pp:bool ->
-  has_builtin:bool ->
   bs_suffix:bool ->
   reason_react_jsx : Bsb_config_types.reason_react_jsx option ->
   digest:string ->

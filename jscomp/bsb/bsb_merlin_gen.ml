@@ -166,20 +166,20 @@ let merlin_file_gen ~per_proj_dir:(per_proj_dir:string)
         Buffer.add_string buffer path ;
       );
     Ext_option.iter built_in_dependency (fun package ->
-        let path = package.package_install_path in
+      Ext_list.iter package.package_install_dirs (fun path ->
         Buffer.add_string buffer (merlin_s ^ path );
         Buffer.add_string buffer (merlin_b ^ path)
-      );
+      ));
     let bsc_string_flag = bsc_flg_to_merlin_ocamlc_flg bsc_flags in
     Buffer.add_string buffer bsc_string_flag ;
     Buffer.add_string buffer (warning_to_merlin_flg  warning);
     Ext_list.iter bs_dependencies (fun package ->
-        let path = package.package_install_path in
+        Ext_list.iter package.package_install_dirs (fun path ->
         Buffer.add_string buffer merlin_s ;
         Buffer.add_string buffer path ;
         Buffer.add_string buffer merlin_b;
         Buffer.add_string buffer path ;
-      );
+    ));
     Ext_list.iter bs_dev_dependencies (**TODO: shall we generate .merlin for dev packages ?*)
     (fun package ->
         let path = package.package_install_path in
@@ -193,11 +193,13 @@ let merlin_file_gen ~per_proj_dir:(per_proj_dir:string)
         if not (Bsb_file_groups.is_empty x) then
           begin
             Buffer.add_string buffer merlin_s;
-            Buffer.add_string buffer x.dir ;
+            Buffer.add_string buffer (per_proj_dir // !Bsb_global_backend.dune_build_dir // x.dir) ;
             Buffer.add_string buffer merlin_b;
-            Buffer.add_string buffer (lib_artifacts_dir//x.dir) ;
-          end
+            Buffer.add_string buffer (per_proj_dir // !Bsb_global_backend.dune_build_dir // x.dir) ;
+          end;
       ) ;
+    Buffer.add_string buffer merlin_b;
+    Buffer.add_string buffer (per_proj_dir // !Bsb_global_backend.dune_build_dir // lib_artifacts_dir) ;
     Buffer.add_string buffer "\n";
     revise_merlin (per_proj_dir // merlin) buffer
   end

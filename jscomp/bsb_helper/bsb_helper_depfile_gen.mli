@@ -32,6 +32,7 @@ val deps_of_channel : in_channel -> string list
 
 val emit_d:
   kind ->
+  cwd:string ->
   bool ->
   string  option ->
   string ->

@@ -33,6 +33,7 @@ type command =
 val command_fatal_error : command -> int -> unit
 
 val run_command_execv :   command -> int
+val run_command_execvp :   command -> int
 
 
 val remove_dir_recursive : string -> unit

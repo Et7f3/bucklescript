@@ -251,9 +251,9 @@ let bs_version_string =
   " ( Using OCaml:" ^ Config.version ^ " )"
 
 let print_version_string () =
-#if undefined BS_RELEASE_BUILD then
+#ifndef BS_RELEASE_BUILD
     print_string "DEV VERSION: ";
-#end
+#endif
     print_endline bs_version_string;
     exit 0
 

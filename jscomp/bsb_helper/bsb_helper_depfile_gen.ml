@@ -23,7 +23,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *)
 
 
-
+let lib_bs = Ext_path.combine "lib" "bs"
 let dep_lit = " : "
 let write_buf name buf  =
   let oc = open_out_bin name in
@@ -104,6 +104,12 @@ let oc_cmi buf namespace source =
   output_file buf source namespace;
   Ext_buffer.add_string buf Literals.suffix_cmi
 
+let rel_target_path ~cwd ~dependent_module_dir ~cur_module_dir =
+  (* `cwd` is the project root. module dir groups are relative to it. *)
+  let module_path = Ext_path.combine cwd dependent_module_dir in
+  let cur_module_path = Ext_path.combine cwd cur_module_dir in
+  Ext_path.rel_normalized_absolute_path ~from:cur_module_path module_path
+
 
 (* For cases with self cycle
     e.g, in b.ml
@@ -125,12 +131,17 @@ let oc_impl
     (db : Bsb_db_decode.t)
     (namespace : string option)
     (buf : Ext_buffer.t)
+    ~cwd
     (lhs_suffix : string)
     (rhs_suffix : string)
   =
   (* TODO: move namespace upper, it is better to resolve ealier *)
   let has_deps = ref false in
   let cur_module_name = Ext_filename.module_name mlast  in
+  let cur_module_dir = match Bsb_db_decode.find db cur_module_name dev_group with
+  | Some { dir_name; _ } -> dir_name
+  | None -> assert false
+  in
   let at_most_once : unit lazy_t  = lazy (
     has_deps := true ;
     output_file buf (Ext_filename.chop_extension_maybe mlast) namespace ;
@@ -138,7 +149,7 @@ let oc_impl
     Ext_buffer.add_string buf dep_lit ) in
   (match namespace with None -> () | Some ns ->
       Lazy.force at_most_once;
-      Ext_buffer.add_string buf ns;
+      Ext_buffer.add_string buf (Ext_path.combine (rel_target_path ~cwd ~dependent_module_dir:lib_bs ~cur_module_dir) ns);
       Ext_buffer.add_string buf Literals.suffix_cmi;
   ) ; (* TODO: moved into static files*)
   let s = extract_dep_raw_string mlast in
@@ -160,12 +171,18 @@ let oc_impl
     | Some ({dir_name; case }) ->
       begin
         Lazy.force at_most_once;
-        let source =
-          Filename.concat dir_name
-          (if case then
-            dependent_module
-          else
-            Ext_string.uncapitalize_ascii dependent_module) in
+        let rel_dir =
+          rel_target_path
+            ~cwd
+            ~dependent_module_dir:dir_name
+            ~cur_module_dir
+        in
+        let module_basename =
+          if case
+          then dependent_module
+          else Ext_string.uncapitalize_ascii dependent_module
+        in
+        let source = Ext_path.concat rel_dir module_basename  in
         Ext_buffer.add_char buf ' ';
         output_file buf source namespace;
         Ext_buffer.add_string buf rhs_suffix;
@@ -189,9 +206,15 @@ let oc_intf
     (dev_group : bool)
     (db : Bsb_db_decode.t)
     (namespace : string option)
+    ~cwd
     (buf : Ext_buffer.t) : unit =
 
   let has_deps = ref false in
+  let cur_module_name = Ext_filename.module_name mliast in
+  let cur_module_dir = match Bsb_db_decode.find db cur_module_name dev_group with
+  | Some { dir_name; _ } -> dir_name
+  | None -> assert false
+  in
   let at_most_once : unit lazy_t = lazy (
     has_deps := true;
     output_file buf (Ext_filename.chop_all_extensions_maybe mliast) namespace ;
@@ -199,10 +222,9 @@ let oc_intf
     Ext_buffer.add_string buf dep_lit) in
   (match namespace with None -> () | Some  ns ->
       Lazy.force at_most_once;
-      Ext_buffer.add_string buf ns;
+      Ext_buffer.add_string buf (Ext_path.combine (rel_target_path ~cwd ~dependent_module_dir:lib_bs ~cur_module_dir) ns);
       Ext_buffer.add_string buf Literals.suffix_cmi;
   ) ;
-  let cur_module_name = Ext_filename.module_name mliast in
   let s = extract_dep_raw_string mliast in
   let offset = ref 1 in
   let size = String.length s in
@@ -220,11 +242,19 @@ let oc_intf
      | None -> ()
      | Some {dir_name; case} ->
        Lazy.force at_most_once;
-       oc_cmi buf namespace
-         (Filename.concat dir_name
-            (if case then dependent_module else
-               Ext_string.uncapitalize_ascii dependent_module
-            ))
+       let rel_dir =
+         rel_target_path
+           ~cwd
+           ~dependent_module_dir:dir_name
+           ~cur_module_dir
+       in
+       let module_basename =
+         if case
+         then dependent_module
+         else Ext_string.uncapitalize_ascii dependent_module
+       in
+       let source = Ext_path.concat rel_dir module_basename  in
+       oc_cmi buf namespace source
     );
     offset := next_tab + 1
   done;
@@ -234,11 +264,10 @@ let oc_intf
 
 let emit_d
   compilation_kind
+  ~cwd
   (dev_group : bool)
   (namespace : string option) (mlast : string) (mliast : string) =
-  let data  =
-    Bsb_db_decode.read_build_cache
-      ~dir:Filename.current_dir_name in
+  let data = Bsb_db_decode.read_build_cache ~dir:(Ext_path.combine cwd lib_bs) in
   let buf = Ext_buffer.create 2048 in
   let filename =
       Ext_filename.new_extension mlast Literals.suffix_d in
@@ -254,6 +283,7 @@ let emit_d
     data
     namespace
     buf
+    ~cwd
     lhs_suffix
     rhs_suffix ;
   if mliast <> "" then begin
@@ -263,5 +293,6 @@ let emit_d
       data
       namespace
       buf
+      ~cwd
   end;
   write_file filename buf

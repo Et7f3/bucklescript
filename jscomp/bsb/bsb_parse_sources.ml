@@ -450,7 +450,11 @@ and walk_source_dir_map (cxt : walk_cxt)  sub_dirs_field =
         if ((not is_typescript) && Ext_string.ends_with file Literals.suffix_gen_js)
         || (is_typescript && Ext_string.ends_with file Literals.suffix_gen_tsx)
         then
-          Sys.remove (Filename.concat working_dir file)
+         Sys.remove (Filename.concat working_dir file);
+        if file = Literals.dune_inc then begin
+          let buf = Buffer.create 0 in
+          Bsb_ninja_targets.revise_dune (Filename.concat working_dir file) buf
+        end
       end;
       let cxt_traverse = cxt.traverse in
       match sub_dirs_field, cxt_traverse with

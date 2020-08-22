@@ -60,6 +60,8 @@ let vendor_ninja =
 let vendor_bsdep =
   Filename.concat bsc_dir "bsb_helper.exe"
 
+let bs_dep_parse =
+  Filename.concat bsc_dir "bsb_parse_depend.exe"
 
 
 ;; assert (Sys.file_exists bsc_dir)

@@ -60,13 +60,13 @@ let setup_env () =
   Lambda.blk_record := Record_attributes_check.blk_record;
   Matching.names_from_construct_pattern :=
     Matching_polyfill.names_from_construct_pattern;
-#if undefined BS_RELEASE_BUILD then
+#ifndef BS_RELEASE_BUILD
     Printexc.record_backtrace true;
-#end
+#endif
   Lexer.replace_directive_bool "BS" true;
   Lexer.replace_directive_bool "JS" true;
   Lexer.replace_directive_string "BS_VERSION"  Bs_version.version
-#if false then
+#if false
   ; Switch.cut := 100 (* tweakable but not very useful *)
-#end
+#endif
 

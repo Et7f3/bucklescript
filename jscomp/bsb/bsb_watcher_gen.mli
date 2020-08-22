@@ -32,5 +32,5 @@
 *)
 val generate_sourcedirs_meta :
   name:string ->
-  Bsb_file_groups.t ->
+  (string * Bsb_file_groups.t) list ->
   unit

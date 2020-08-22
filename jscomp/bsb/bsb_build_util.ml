@@ -35,10 +35,7 @@ let ppx_flags (xs : Bsb_config_types.ppx list) =
     (Ext_list.map xs
        (fun x ->
           if x.args = [] then Ext_filename.maybe_quote x.name else
-            let fmt : _ format =
-              if Ext_sys.is_windows_or_cygwin then "\"%s %s\""
-              else "'%s %s'" in
-            Printf.sprintf fmt x.name (String.concat " " x.args)
+            Printf.sprintf "\"%s %s\"" x.name (String.concat " " x.args)
        ))
 
 let pp_flag (xs : string) =
@@ -52,6 +49,23 @@ let include_dirs dirs =
 let include_dirs_by dirs fn =
   String.concat Ext_string.single_space
     (Ext_list.flat_map dirs (fun x -> ["-I"; Ext_filename.maybe_quote (fn x)]))
+
+
+let sourcedir_include_dirs ~per_proj_dir ~cur_dir ?namespace source_dirs =
+ let relativize_single dir =
+  Ext_path.rel_normalized_absolute_path
+        ~from:(Ext_path.combine per_proj_dir cur_dir)
+        (Ext_path.combine per_proj_dir dir)
+ in
+ let source_dirs = Ext_list.map source_dirs relativize_single in
+ let dirs = if namespace = None then source_dirs
+  (* TODO: add the lib/bs dir where the mlmap file is. *)
+  else begin
+   relativize_single !Bsb_global_backend.lib_artifacts_dir :: source_dirs
+  end
+  (*working dir is [lib/bs] we include this path to have namespace mapping*)
+ in
+ include_dirs dirs
 
 
 (* we use lazy $src_root_dir *)

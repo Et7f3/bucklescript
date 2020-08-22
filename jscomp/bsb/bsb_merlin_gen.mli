@@ -24,7 +24,6 @@
 
 
 
-
 val merlin_file_gen :
   per_proj_dir:string  ->
   Bsb_config_types.t ->

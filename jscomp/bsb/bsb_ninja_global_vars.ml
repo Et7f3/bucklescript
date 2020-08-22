@@ -22,7 +22,64 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. *)
 
+type t =
+ {
+  g_pkg_flg : string;
+  src_root_dir: string;
+  bsc: string;
+  bsdep: string;
+  bs_dep_parse: string;
+  warnings: string;
+  bsc_flags: string;
+  ppx_flags: string;
+  g_dpkg_incls: string;
+  g_dev_incls: string list;
+  g_stdlib_incl: string list;
+  g_lib_incls: string;
+  g_sourcedirs_incls: string list;
+  g_ns : string ;
+  gentypeconfig: string option;
+  pp_flags: string option;
+  namespace: string option
+ }
 
+let make
+  ~g_pkg_flg
+  ~src_root_dir
+  ~bsc
+  ~bsdep
+  ~bs_dep_parse
+  ~warnings
+  ~bsc_flags
+  ~ppx_flags
+  ~g_dpkg_incls
+  ~g_ns
+  ~g_dev_incls
+  ~g_stdlib_incl
+  ~g_lib_incls
+  ~g_sourcedirs_incls
+  ~gentypeconfig
+  ~pp_flags
+  ~namespace =
+ {
+  g_pkg_flg;
+  src_root_dir;
+  bsc;
+  bsdep;
+  bs_dep_parse;
+  warnings;
+  bsc_flags;
+  ppx_flags;
+  g_dpkg_incls;
+  g_dev_incls;
+  g_stdlib_incl;
+  g_lib_incls;
+  g_sourcedirs_incls;
+  g_ns;
+  gentypeconfig;
+  pp_flags;
+  namespace;
+ }
 
 let g_pkg_flg = "g_pkg_flg"
 

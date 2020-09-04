@@ -142,6 +142,8 @@ jscomp/.lsp
 .vscode/launch.json
 tracing*.json
 darwin/bsc
+linux/bsc
+win32/bsc
 .nyc_output
 themes
 .vscode/settings.json

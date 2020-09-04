@@ -58,10 +58,10 @@ jobs:
 
       - name: Build project in release
         run: |
-          esy which node || true
-          esy which node.cmd || true
-          esy which node.exe || true
-          esy which node.bat || true
+          esy b which node || true
+          esy b which node.cmd || true
+          esy b which node.exe || true
+          esy b which node.bat || true
           esy build --release
 
       # Now that our core project build let builds others deps

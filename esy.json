@@ -23,7 +23,7 @@
       "cp -p -r #{ os != 'darwin' ? '-u' : ''} -f #{self.root / 'bsconfig.json'} #{self.root / 'bsrefmt'} #{self.root / 'esy.json'} #{self.root / 'package.json'} #{self.target_dir / 'jscomp'} #{self.target_dir / 'jscomp' / 'bin'} #{self.target_dir / 'lib'} #{self.target_dir / 'scripts'} #{self.target_dir / 'vendor'} #{self.install}"
     ],
     "buildDev": [
-      "cp -p -r #{ os != 'darwin' ? '-u' : ''} -f #{self.root / 'package.json'} #{self.root / 'odoc_gen'} #{self.root / 'syntax'} #{self.root / 'lib'} #{self.root / 'jscomp'} #{self.root / 'scripts'} #{self.root / 'vendor'} #{self.root / 'darwin'} #{self.root / 'freebsd'} #{self.root / 'linux'} #{self.root / 'win32'} #{self.target_dir}",
+      "cp -p -r #{ os != 'darwin' ? '-u' : ''} -f #{self.root / 'package.json'} #{self.root / 'bsconfig.json'} #{self.root / 'odoc_gen'} #{self.root / 'syntax'} #{self.root / 'lib'} #{self.root / 'jscomp'} #{self.root / 'scripts'} #{self.root / 'vendor'} #{self.root / 'darwin'} #{self.root / 'freebsd'} #{self.root / 'linux'} #{self.root / 'win32'} #{self.target_dir}",
       "echo config",
       "sh -c \"cd #{self.target_dir} && node ./scripts/ninja.js config\"",
       "echo build",

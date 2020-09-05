@@ -16,6 +16,7 @@
     "clean": "node ./scripts/ninja.js clean"
   },
   "esy": {
+    "buildsInSource": true,
     "build": [
       "cp -p -r #{ os != 'darwin' ? '-u' : ''} -f #{self.root / 'lib'} #{self.root / 'jscomp'} #{self.root / 'scripts'} #{self.root / 'vendor'} #{self.root / (os == 'darwin' ? 'darwin' : os == 'windows' ? 'win32' : 'linux')} #{self.target_dir}",
       "sh -c \"cd #{self.target_dir} && #{os == 'windows' ? '/cygdrive/c/hostedtoolcache/windows/node/12.18.3/x64/node.exe' : 'node'} ./scripts/install.js\"",

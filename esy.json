@@ -6,11 +6,11 @@
     "ocaml": "4.6.1000+BS",
     "@opam/dune": "*",
     "@opam/cppo": "*",
+    "@opam/reason": "facebook/reason:package.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
     "@opam/camlp4": "4.06+1"
   },
   "resolutions": {
-    "ocaml": "Et7f3/ocaml:package.json#275edcb81171b7106c7d3db3b2b0850a2cc00e0d",
-    "@opam/reason": "anmonteiro/reason:package.json#286482590c94e27387c008b4b4a4713da9c53c20"
+    "ocaml": "Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57"
   },
   "scripts": {
     "clean": "node ./scripts/ninja.js clean"

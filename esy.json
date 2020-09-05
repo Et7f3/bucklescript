@@ -15,7 +15,7 @@
     "clean": "node ./scripts/ninja.js clean"
   },
   "esy": {
-    "buildsInSource": true,
+    "buildsInSource": "unsafe",
     "build": "dune build -p #{self.name} -j 4 --display=short",
     "exportedEnv": {
       "CAML_LD_LIBRARY_PATH": {

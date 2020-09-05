@@ -1,0 +1,26 @@
+diff --git a/src/findlib/Makefile b/src/findlib/Makefile
+index 6ec8a71..07e3fa4 100644
+--- a/src/findlib/Makefile
++++ b/src/findlib/Makefile
+@@ -159,7 +159,7 @@ depend: *.ml *.mli fl_meta.ml fl_metascanner.ml findlib_config.ml topfind.ml
+ 	$(OCAMLOPT) $(OPAQUE) -thread -c -impl $<
+ 
+ .ml.cmx:
+-	$(OCAMLOPT) $(OPAQUE) -c $<
++	$(OCAMLOPT) $(OPAQUE) -w -58 -c $<
+ 
+ .ml.cmo:
+ 	$(OCAMLC) $(OPAQUE) -g -c $<
+diff --git a/src/findlib/frontend.ml b/src/findlib/frontend.ml
+index db724cf..6984d46 100644
+--- a/src/findlib/frontend.ml
++++ b/src/findlib/frontend.ml
+@@ -1823,7 +1823,7 @@ let copy_file ?(rename = (fun name -> name)) ?(append = "") src dstdir =
+ 		   outpath in
+     try
+       let buflen = 4096 in
+-      let buf = String.create buflen in   (* FIXME: Bytes.create *)
++      let buf = Bytes.create buflen in
+       let pos = ref 0 in
+       let len = ref (input ch_in buf 0 buflen) in
+       while !len > 0 do

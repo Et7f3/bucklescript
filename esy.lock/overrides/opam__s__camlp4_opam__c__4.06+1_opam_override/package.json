@@ -1,5 +1,6 @@
 {
   "build": [
+    "patch -p1 -i rescript.patch",
     [
       "sed",
       "-i'.orig'",

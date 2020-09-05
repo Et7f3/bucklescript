@@ -125,7 +125,8 @@ let output_ninja_and_namespace_map
       Ext_string.inter2 "-bs-ns" s in
   let bs_groups : Bsb_db.t = {lib = Map_string.empty; dev = Map_string.empty} in
   let source_dirs : string list Bsb_db.cat = {lib = []; dev = []} in
-  let static_resources =
+  (* used later but commented *)
+  let _static_resources =
     Ext_list.fold_left
       bs_file_groups
       [] (

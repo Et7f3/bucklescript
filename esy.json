@@ -17,7 +17,7 @@
   },
   "esy": {
     "build": [
-      ["node", "./scripts/install.js"],
+      ["/cygdrive/c/hostedtoolcache/windows/node/12.18.3/x64/node.exe", "./scripts/install.js"],
       ["cp", "-r", "-f", "#{self.root / 'bsconfig.json'}", "#{self.install}"],
       ["cp", "-r", "-f", "#{self.root / 'esy.json'}", "#{self.install}"],
       ["cp", "-r", "-f", "#{self.root / 'package.json'}", "#{self.install}"],
@@ -37,9 +37,9 @@
     ],
     "buildDev": [
       ["echo", "config"],
-      ["node", "./scripts/ninja.js", "config"],
+      ["/cygdrive/c/hostedtoolcache/windows/node/12.18.3/x64/node.exe", "./scripts/ninja.js", "config"],
       ["echo", "build"],
-      ["node", "./scripts/ninja.js", "build"]
+      ["/cygdrive/c/hostedtoolcache/windows/node/12.18.3/x64/node.exe", "./scripts/ninja.js", "build"]
     ],
     "buildEnv": {
       "ESY": "true"

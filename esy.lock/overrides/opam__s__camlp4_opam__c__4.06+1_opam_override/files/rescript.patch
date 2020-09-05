@@ -1,0 +1,25 @@
+diff --git a/Makefile b/Makefile
+index b9225f6..a1b66cc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,7 +3,7 @@ DESTDIR=
+ 
+ -include config.sh
+ 
+-OB += $(OB_FLAGS)
++OB += $(OB_FLAGS) -cflags -w,-58
+ 
+ .PHONY: default
+ default: byte
+diff --git a/camlp4/Camlp4/Options.ml b/camlp4/Camlp4/Options.ml
+index 2d08920..9d99e68 100644
+--- a/camlp4/Camlp4/Options.ml
++++ b/camlp4/Camlp4/Options.ml
+@@ -95,6 +95,7 @@ value rec action_arg s sl =
+       match (if s = "" then sl else [s :: sl]) with
+       [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
+       | _ -> None ]
++  | Arg.Expand _ -> failwith "I don't know how to fix this"
+   ];
+ 
+ value common_start s1 s2 =

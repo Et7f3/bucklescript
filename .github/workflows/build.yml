@@ -62,7 +62,7 @@ jobs:
           echo esy b which node.cmd || true
           echo esy b which node.exe || true
           echo esy b which node.bat || true
-          esy build --release
+          echo esy build --release
 
       # Now that our core project build let builds others deps
       - name: Build  dependencies

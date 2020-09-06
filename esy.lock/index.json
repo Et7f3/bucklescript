@@ -1,5 +1,5 @@
 {
-  "checksum": "80c9a13e8c27c1b5f5a1b7754234991c",
+  "checksum": "c6485558ef5f022fc5e4a434df697c8f",
   "root": "bucklescript@link-dev:./esy.json",
   "node": {
     "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9": {
@@ -26,8 +26,9 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9",
-        "@opam/reason@opam:3.6.0@58adb39a", "@opam/dune@opam:2.7.0@6c6dd6fb",
-        "@opam/cppo@opam:1.6.6@f4f83858", "@opam/camlp4@opam:4.06+1@5823993d"
+        "@opam/reason@github:facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4@d41d8cd9",
+        "@opam/dune@opam:2.7.0@6c6dd6fb", "@opam/cppo@opam:1.6.6@f4f83858",
+        "@opam/camlp4@opam:4.06+1@5823993d"
       ],
       "devDependencies": []
     },
@@ -57,40 +58,30 @@
         "@opam/dune@opam:2.7.0@6c6dd6fb"
       ]
     },
-    "@opam/reason@opam:3.6.0@58adb39a": {
-      "id": "@opam/reason@opam:3.6.0@58adb39a",
+    "@opam/reason@github:facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4@d41d8cd9": {
+      "id":
+        "@opam/reason@github:facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4@d41d8cd9",
       "name": "@opam/reason",
-      "version": "opam:3.6.0",
+      "version":
+        "github:facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/md5/d4/d4d729804bc509bca0ac6223e06f7314#md5:d4d729804bc509bca0ac6223e06f7314",
-          "archive:https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.6.0.tgz#md5:d4d729804bc509bca0ac6223e06f7314"
-        ],
-        "opam": {
-          "name": "reason",
-          "version": "3.6.0",
-          "path": "esy.lock/opam/reason.3.6.0"
-        }
+          "github:facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4"
+        ]
       },
       "overrides": [],
       "dependencies": [
         "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9",
         "@opam/result@opam:1.5@6b753c82",
+        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
         "@opam/ocamlfind@opam:1.8.1@c1a9953b",
-        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
-        "@opam/merlin-extend@opam:0.6@404f814c",
-        "@opam/menhir@opam:20200624@8629ff13",
-        "@opam/fix@opam:20200131@0ecd2f01", "@opam/dune@opam:2.7.0@6c6dd6fb",
-        "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9",
-        "@opam/result@opam:1.5@6b753c82",
-        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
         "@opam/merlin-extend@opam:0.6@404f814c",
         "@opam/menhir@opam:20200624@8629ff13",
         "@opam/fix@opam:20200131@0ecd2f01", "@opam/dune@opam:2.7.0@6c6dd6fb"
+      ],
+      "devDependencies": [
+        "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9"
       ]
     },
     "@opam/ppx_derivers@opam:1.2.1@ecf0aa45": {
@@ -241,36 +232,6 @@
       ],
       "devDependencies": [
         "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9"
-      ]
-    },
-    "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47": {
-      "id": "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
-      "name": "@opam/ocaml-migrate-parsetree",
-      "version": "opam:1.7.3",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/6d/6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55#sha256:6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55",
-          "archive:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/releases/download/v1.7.3/ocaml-migrate-parsetree-v1.7.3.tbz#sha256:6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55"
-        ],
-        "opam": {
-          "name": "ocaml-migrate-parsetree",
-          "version": "1.7.3",
-          "path": "esy.lock/opam/ocaml-migrate-parsetree.1.7.3"
-        }
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9",
-        "@opam/result@opam:1.5@6b753c82",
-        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
-        "@opam/dune@opam:2.7.0@6c6dd6fb", "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@github:Et7f3/ocaml:package.json#cee7129b58afcb987cc1741acf4a786414502a57@d41d8cd9",
-        "@opam/result@opam:1.5@6b753c82",
-        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
-        "@opam/dune@opam:2.7.0@6c6dd6fb"
       ]
     },
     "@opam/merlin-extend@opam:0.6@404f814c": {

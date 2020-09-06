@@ -2,11 +2,10 @@
   "name": "bucklescript",
   "version": "7.2.0",
   "dependencies": {
-    "@opam/reason": "<4.0.0",
     "ocaml": "4.6.1000+BS",
     "@opam/dune": "*",
     "@opam/cppo": "*",
-    "@opam/reason": "facebook/reason:package.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
+    "@opam/reason": "facebook/reason:reason.json#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
     "@opam/camlp4": "4.06+1"
   },
   "resolutions": {
